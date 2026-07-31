@@ -1,0 +1,24 @@
+# Dependencies and build output
+node_modules/
+.vercel/
+dist/
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+
+# Raw financial data and local calculations
+*.csv
+*.numbers
+*.xlsx
+*.xls
+*.gsheet
+schwab*/
+exports*/
+data/raw/
+calculations*/
+
+# OS/editor files
+.DS_Store
+*.swp
