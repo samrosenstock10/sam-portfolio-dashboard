@@ -30,6 +30,27 @@ jobs:
           if not match:
               raise RuntimeError('Could not locate the dashboard update script')
           code = textwrap.dedent(match.group(1))
+
+          # Replace the original cross-section regex with section-by-section matching.
+          start = code.index('def pop_section')
+          end = code.index('# Reorder sections')
+          fixed_helpers = '''def _find_section(document: str, marker: str):
+    pattern = re.compile(r'    <section\\b[^>]*>.*?</section>\\n', re.S)
+    matches = [match for match in pattern.finditer(document) if marker in match.group(0)]
+    if len(matches) != 1:
+        raise RuntimeError(f"Expected one section containing {marker!r}, found {len(matches)}")
+    return matches[0]
+
+def pop_section(document: str, marker: str):
+    match = _find_section(document, marker)
+    return match.group(0), document[:match.start()] + document[match.end():]
+
+def insert_after_section(document: str, marker: str, block: str):
+    match = _find_section(document, marker)
+    return document[:match.end()] + block + document[match.end():]
+
+'''
+          code = code[:start] + fixed_helpers + code[end:]
           exec(compile(code, 'apply-dashboard-layout.py', 'exec'), {})
           PYTHON
 
