@@ -1,6 +1,10 @@
-name: Apply dashboard update from PR
+name: Apply dashboard update
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - .github/dashboard-update-trigger
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
