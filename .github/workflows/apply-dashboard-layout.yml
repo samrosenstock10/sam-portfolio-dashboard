@@ -90,20 +90,19 @@ jobs:
               'bars("market-bars",D.marketCaps,{name:r=>r.category,total:r=>r.allocation,max:.3,',
           )
 
-          def pop_section(document: str, marker: str):
-              pattern = re.compile(r'    <section\b[^>]*>.*?' + re.escape(marker) + r'.*?</section>\n', re.S)
-              matches = list(pattern.finditer(document))
+          def find_section(document: str, marker: str):
+              pattern = re.compile(r'    <section\b[^>]*>.*?</section>\n', re.S)
+              matches = [match for match in pattern.finditer(document) if marker in match.group(0)]
               if len(matches) != 1:
                   raise RuntimeError(f"Expected one section containing {marker!r}, found {len(matches)}")
-              match = matches[0]
+              return matches[0]
+
+          def pop_section(document: str, marker: str):
+              match = find_section(document, marker)
               return match.group(0), document[:match.start()] + document[match.end():]
 
           def insert_after_section(document: str, marker: str, block: str):
-              pattern = re.compile(r'    <section\b[^>]*>.*?' + re.escape(marker) + r'.*?</section>\n', re.S)
-              matches = list(pattern.finditer(document))
-              if len(matches) != 1:
-                  raise RuntimeError(f"Expected one insertion target containing {marker!r}, found {len(matches)}")
-              match = matches[0]
+              match = find_section(document, marker)
               return document[:match.end()] + block + document[match.end():]
 
           # Reorder sections without changing their contents.
