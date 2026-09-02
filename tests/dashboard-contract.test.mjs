@@ -9,7 +9,7 @@ function validHtml() {
     'qqq-table','spy-table',
   ];
   const rows = Array.from({ length: 252 }, (_, index) => [45504 + index, index ? 0.01 : 0, index ? 0.02 : 0, index ? 0.03 : 0, index ? 0.04 : 0]);
-  return `<!doctype html><html><head><style>body{background:#080808}.chart-scroll{max-height:1050px;overflow-y:auto}@media(max-width:760px){.chart-scroll{max-height:520px}}</style></head><body>${'x'.repeat(50000)}<a href="https://docs.google.com/spreadsheets/d/1XrpgOS9dFkQljaUf9Eftk6DyGnyYcmHnoKZGwGoS1hw/edit">Source</a>${ids.map((id) => id === 'performance' ? `<section id="performance">Money-weighted IRR Time-weighted QQQ</section>` : `<div id="${id}"></div>`).join('')}<section class="card full"></section><script id="performance-history" type="application/json">${JSON.stringify(rows)}</script></body></html>`;
+  return `<!doctype html><html><head><style>:root{--bg:#080808}html{background:var(--bg)}body{background:var(--bg)}.chart-scroll{max-height:1050px;overflow-y:auto}@media(max-width:760px){.chart-scroll{max-height:520px}}</style></head><body>${'x'.repeat(50000)}<a href="https://docs.google.com/spreadsheets/d/1XrpgOS9dFkQljaUf9Eftk6DyGnyYcmHnoKZGwGoS1hw/edit">Source</a>${ids.map((id) => id === 'performance' ? `<section id="performance">Money-weighted IRR Time-weighted QQQ</section>` : `<div id="${id}"></div>`).join('')}<section class="card full"></section><script id="performance-history" type="application/json">${JSON.stringify(rows)}</script></body></html>`;
 }
 
 test('accepts a dashboard satisfying the permanent contract', () => {
