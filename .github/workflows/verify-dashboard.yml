@@ -1,0 +1,47 @@
+name: Verify portfolio dashboard
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'vercel.json'
+      - 'package.json'
+      - 'lib/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'docs/automation/**'
+      - '.github/workflows/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'index.html'
+      - 'vercel.json'
+      - 'package.json'
+      - 'lib/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'docs/automation/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run contract tests
+        run: npm test
+      - name: Validate current deployable artifact
+        run: npm run validate
+      - name: Build the exact static artifact
+        run: npm run build
+      - name: Confirm the build preserves index.html byte-for-byte
+        run: cmp --silent index.html dist/index.html
