@@ -236,6 +236,7 @@
 const D=JSON.parse(document.getElementById("dashboard-data").textContent);
 const pct=(n,d=1)=>new Intl.NumberFormat(undefined,{style:"percent",maximumFractionDigits:d,minimumFractionDigits:d}).format(Number(n)||0);
 const num=(n,d=2)=>new Intl.NumberFormat(undefined,{maximumFractionDigits:d}).format(Number(n)||0);
+const shortDate=s=>s?new Date(s+"T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):null;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const md=s=>String(s||"")
   .replace(/^### (.*)$/gm,"<h3>$1</h3>")
