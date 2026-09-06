@@ -9,8 +9,8 @@ function validData() {
     totalAllocation: 0.8, taxFreeShare: 0.1, flexibility: 'Mixed',
     standardSector: 'Technology', exposureType: 'Direct + ETF look-through',
   };
-  return {
-    blocks: { 'status-note': 'Sources retained as of their verified dates.', 'holdings-residual-note': 'ETF residual omitted from chart.', 'investor-read': '' },
+  const data = {
+    blocks: { 'status-note': 'Performance through Sep 4, 2026 · Portfolio through Aug 21, 2026.', 'holdings-residual-note': 'ETF residual omitted from chart.', 'investor-read': '' },
     stats: { top5: 1, effectivePositions: 2, restrictedTaxable: 0.7, rothShare: 0.1, cashShare: 0.05, debtShare: 0.2, subHalfCount: 1, subHalf: 0.05 },
     gold: { allocation: 0, priceAsOf: '2026-08-21' },
     beta: { accounts: [{ key: 'total', label: 'Total', beta: 0.9, comparison: '10% less sensitive than QQQ' }], start: '2025-08-27', end: '2026-09-04', sessions: 252 },
@@ -25,8 +25,11 @@ function validData() {
     qqq: [{ rank: 1, company: 'Example', ticker: 'EX', weightInETF: 0.5, portfolioContribution: 0.1, totalCompanyExposure: 0.8, asOf: 'Aug 20, 2026' }],
     spy: [{ rank: 1, company: 'Example', ticker: 'EX', weightInETF: 0.5, portfolioContribution: 0.1, totalCompanyExposure: 0.8, asOf: '2026-08-20' }],
     generatedAt: '2026-09-05T03:30:00.000Z',
-    sourceFreshness: [{ component: 'QQQ companies', sourceAsOf: '2026-08-20', status: 'Source unchanged' }],
+    portfolioAsOf: '2026-08-21',
+    etfSourceDates: { qqqHoldings: '2026-08-20', spyHoldings: '2026-08-20', qqqSectors: '2026-07-31', spySectors: '2026-08-20' },
   };
+  for (const fund of ['qqq', 'spy']) data[fund] = Array.from({ length: 30 }, (_, i) => ({ ...data[fund][0], rank: i + 1, ticker: `EX${i}`, weightInETF: 0.01 }));
+  return data;
 }
 
 function validHtml(data = validData()) {
@@ -118,7 +121,7 @@ test('rejects missing rendered text fields', () => {
 });
 
 test('rejects invalid calendar dates and reversed beta windows without requiring freshness', () => {
-  for (const path of ['roth.holdingsAsOf', 'gold.priceAsOf', 'beta.start', 'sourceFreshness.0.sourceAsOf', 'qqq.0.asOf']) {
+  for (const path of ['roth.holdingsAsOf', 'gold.priceAsOf', 'beta.start', 'qqq.0.asOf']) {
     for (const value of ['not-a-date', '2026-02-30']) {
       assert.throws(() => validateDashboardHtml(changeData(path, value)), /invalid_dashboard_data_date/);
     }
@@ -137,14 +140,13 @@ test('rejects inconsistent complete allocation totals', () => {
   }
 });
 
-test('preserves truthful stale sources, partial charts, negative net cash, and absent optional dates', () => {
+test('preserves an older portfolio version during daily updates, partial charts, negative cash, and absent optional dates', () => {
   const data = validData();
   data.accounts = [{ category: 'Invested', allocation: 1.02 }, { category: 'Net cash', allocation: -0.02 }];
   data.stats.cashShare = -0.02;
   data.beta.accounts[0].beta = -0.5;
   data.roth.holdingsAsOf = null;
   data.gold.priceAsOf = undefined;
-  data.sourceFreshness.push({ component: 'Unavailable source', sourceAsOf: null, status: 'Blocked source; prior snapshot retained' });
   const html = validHtml(data);
   assert.equal(validateDashboardHtml(html).performanceRows, 252);
 });
