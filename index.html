@@ -99,27 +99,19 @@
     @media(max-width:1050px){.metrics{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:760px){.perf-summary,.perf-accounts{grid-template-columns:1fr}.beta-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.perf-summary{gap:8px}.perf-tile{min-height:82px}.skill-row{grid-template-columns:88px minmax(0,1fr) 42px}.shell{padding:20px 14px 44px}.grid{grid-template-columns:1fr}.full{grid-column:auto}.metrics{grid-template-columns:repeat(2,1fr)}header{display:block}.bar-row{grid-template-columns:minmax(86px,112px) minmax(0,1fr) 45px;gap:7px}.bar-name{font-size:11px}.axis-note{margin-left:119px;margin-right:52px}.donut-wrap{grid-template-columns:140px 1fr}.donut{width:135px;height:135px}.donut:after{inset:27px}.card{padding:14px}.table-card{padding:0}.table-head{padding:14px}.chart-scroll{max-height:520px}.return-chart-wrap{height:270px}}
     @media(max-width:430px){h1{font-size:26px}.metric{min-height:82px;padding:12px}.metric-value{font-size:21px}.donut-wrap{grid-template-columns:1fr}.donut{margin:auto}.bar-row{grid-template-columns:88px minmax(0,1fr) 42px}.axis-note{display:none}}
+    .section-nav{position:sticky;top:0;z-index:20;display:flex;gap:6px;flex-wrap:wrap;padding:10px 0;background:rgba(8,8,8,.96);border-bottom:1px solid var(--line);margin-bottom:14px}.section-nav a{padding:10px 16px;min-height:44px;border-radius:999px;border:1px solid var(--line);color:#e4e4e7}.section-nav a:hover,.section-nav a:focus-visible{background:#202024;text-decoration:none}.more-metrics{margin:8px 0 18px;color:var(--muted)}.more-metrics summary{padding:8px 0;cursor:pointer;width:fit-content;min-height:40px}.view-all{margin-top:15px;min-height:44px;padding:10px 16px;border:1px solid #52525b;border-radius:999px;background:var(--panel2);color:var(--text);font:inherit;cursor:pointer}.metric-help{color:#a1a1aa;font-size:12px}[id]{scroll-margin-top:85px}button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid #c4b5fd;outline-offset:3px}[hidden]{display:none!important}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}@media(max-width:430px){.section-nav{gap:4px}.section-nav a{padding:10px 11px;font-size:12px}}
   </style>
 </head>
 <body>
 <div class="shell">
-  <header>
+  <header id="overview">
     <div><h1>Portfolio Dashboard</h1></div>
   </header>
   <div class="note md" id="status"></div>
-  <section class="metrics" id="metrics"></section>
+  <nav class="section-nav" aria-label="Dashboard sections"><a href="#overview">Overview</a><a href="#return-history">Performance</a><a href="#allocation">Allocation</a><a href="#holdings-section">Holdings</a></nav>
+  <section class="metrics" id="metrics" aria-label="Portfolio overview"></section>
+  <details class="more-metrics"><summary>More portfolio metrics</summary><div class="metrics" id="secondary-metrics"></div></details>
   <main class="grid">
-    <section class="card full">
-      <div class="card-head"><div><h2>Economic exposure: direct + QQQ/SPY top 30</h2><p class="subtitle">Blue = direct holding; purple = top-30 look-through from QQQ and SPY. Residual ETF sleeves are disclosed below.</p><div class="legend"><span class="key"><i class="dot" style="background:var(--blue)"></i>Direct / residual</span><span class="key"><i class="dot" style="background:var(--purple)"></i>ETF look-through</span></div></div></div>
-      <div class="chart-scroll"><div class="bars" id="holdings-bars"></div></div>
-      <div class="note md" id="residual"></div>
-    </section>
-    <section class="card full">
-      <div class="card-head"><div><h2>Roth IRA stock allocation</h2><p class="subtitle">Each bar is the stock's share of invested Roth assets. The account holds no ETFs, so this view uses one direct-holding color.</p><div class="legend"><span class="key"><i class="dot" style="background:var(--blue)"></i>Direct Roth holding</span></div></div></div>
-      <div class="bars" id="roth-bars"></div>
-      <div class="note" id="roth-note"></div>
-    </section>
-    <section class="card full md" id="changes"></section>
     <section class="card full" id="return-history">
       <div class="card-head">
         <div>
@@ -183,7 +175,20 @@
 
       <div class="perf-foot">Posted through Sep 4, 2026. Account lines use the full daily Schwab value histories and reconcile to Schwab's Jul 25 cumulative-return baselines. QQQ uses total return with distributions reinvested over Jul 31, 2024–Sep 4, 2026.</div>
     </section>
+
+    <section class="card full" id="holdings-section">
+      <div class="card-head"><div><h2>Economic exposure: direct + QQQ/SPY top 30</h2><p class="subtitle">Blue = direct holding; purple = top-30 look-through from QQQ and SPY. Residual ETF sleeves are disclosed below.</p><div class="legend"><span class="key"><i class="dot" style="background:var(--blue)"></i>Direct / residual</span><span class="key"><i class="dot" style="background:var(--purple)"></i>ETF look-through</span></div></div></div>
+      <div class="chart-scroll"><div class="bars" id="holdings-bars"></div></div>
+      <button class="view-all" id="toggle-holdings" type="button" aria-expanded="false" aria-controls="holdings-bars">Show all holdings</button>
+      <div class="note md" id="residual"></div>
+    </section>
     <section class="card full">
+      <div class="card-head"><div><h2>Roth IRA stock allocation</h2><p class="subtitle">Each bar is the stock's share of invested Roth assets. The account holds no ETFs, so this view uses one direct-holding color.</p><div class="legend"><span class="key"><i class="dot" style="background:var(--blue)"></i>Direct Roth holding</span></div></div></div>
+      <div class="bars" id="roth-bars"></div>
+      <div class="note" id="roth-note"></div>
+    </section>
+    <section class="card full md" id="changes"></section>
+    <section class="card full" id="allocation">
       <div class="card-head"><div><h2>Direct public-stock exposure by market cap</h2><p class="subtitle">Share of the total portfolio from directly held public stocks only. ETFs, gold, cash, and private holdings are excluded.</p></div></div>
       <div class="bars" id="market-bars"></div>
     </section>
@@ -251,7 +256,7 @@ document.getElementById("changes").innerHTML=md(D.blocks["investor-read"]);
 
 const metricDefs=[
   ["Top 5 exposure",pct(D.stats.top5),"Largest five economic exposure rows"],
-  ["Effective exposure rows",num(D.stats.effectivePositions),"Inverse-HHI concentration"],
+  ["Diversification equivalent",num(D.stats.effectivePositions),"Equivalent number of equally weighted exposures (inverse HHI)"],
   ["Restricted taxable",pct(D.stats.restrictedTaxable),"Capital marked restricted"],
   ["Roth tax-free",pct(D.stats.rothShare),"Share inside Roth IRA"],
   ["Cash",pct(D.stats.cashShare),"Tracked pro-forma cash"],
@@ -259,7 +264,10 @@ const metricDefs=[
   ["Debt / gross assets",pct(D.stats.debtShare),"Liability share; principal private"],
   ["1-year beta vs QQQ",D.beta.accounts[0].beta.toFixed(2),"Total portfolio · QQQ = 1.00"],
 ];
-document.getElementById("metrics").innerHTML=metricDefs.map(([l,v,h])=>'<article class="metric"><div class="metric-label">'+esc(l)+'</div><div class="metric-value">'+esc(v)+'</div><div class="metric-help">'+esc(h)+'</div></article>').join("");
+const metricCard=([l,v,h])=>'<article class="metric"><div class="metric-label">'+esc(l)+'</div><div class="metric-value">'+esc(v)+'</div><div class="metric-help">'+esc(h)+'</div></article>';
+const primaryMetrics=[0,4,6,7];
+document.getElementById("metrics").innerHTML=metricDefs.filter((_,i)=>primaryMetrics.includes(i)).map(metricCard).join("");
+document.getElementById("secondary-metrics").innerHTML=metricDefs.filter((_,i)=>!primaryMetrics.includes(i)).map(metricCard).join("");
 const betaColors={total:"var(--blue)",individual:"var(--green)",roth:"var(--purple)",qqq:"#71717a"};
 document.getElementById("beta-grid").innerHTML=D.beta.accounts.map(r=>'<article class="beta-item" style="border-top:3px solid '+betaColors[r.key]+'"><div class="beta-name">'+esc(r.label)+'</div><div class="beta-value">'+Number(r.beta).toFixed(2)+'</div><div class="beta-vs">QQQ reference: 1.00</div><div class="beta-detail">'+esc(r.comparison)+'</div></article>').join("");
 
@@ -272,10 +280,13 @@ function bars(id,rows,opt={}){
     return '<div class="bar-row"><div class="bar-name" title="'+esc(opt.name(r))+'">'+esc(opt.name(r))+'</div><div class="bar-track">'+segHtml+'</div><div class="bar-value">'+pct(total)+'</div></div>';
   }).join("");
 }
-bars("holdings-bars",D.chartHoldings,{name:r=>r.position,total:r=>r.totalAllocation,segments:r=>[
+let showAllHoldings=false;
+function renderHoldings(){bars("holdings-bars",showAllHoldings?D.chartHoldings:D.chartHoldings.slice(0,15),{name:r=>r.position,total:r=>r.totalAllocation,segments:r=>[
   {value:r.directAllocation,color:"var(--blue)",tip:r.position+"\nDirect: "+pct(r.directAllocation)+"\nTotal: "+pct(r.totalAllocation)},
   {value:r.etfLookThrough,color:"var(--purple)",tip:r.position+"\nFrom QQQ: "+pct(r.qqqLookThrough)+"\nFrom SPY: "+pct(r.spyLookThrough)+"\nTotal: "+pct(r.totalAllocation)}
 ]});
+const toggle=document.getElementById("toggle-holdings");toggle.hidden=D.chartHoldings.length<=15;toggle.textContent=showAllHoldings?"Show top 15":"Show all "+D.chartHoldings.length+" holdings";toggle.setAttribute("aria-expanded",String(showAllHoldings));}
+renderHoldings();document.getElementById("toggle-holdings").addEventListener("click",()=>{showAllHoldings=!showAllHoldings;renderHoldings()});
 bars("roth-bars",D.roth.holdings,{name:r=>r.position,total:r=>r.allocation,segments:r=>[
   {value:r.allocation,color:"var(--blue)",tip:r.position+" ("+r.ticker+")\nShare of Roth stocks: "+pct(r.allocation)}
 ]});
@@ -375,4 +386,5 @@ document.addEventListener("pointerout",e=>{if(e.target.closest("[data-tooltip]")
 </script>
 </body>
 </html>
+
 
