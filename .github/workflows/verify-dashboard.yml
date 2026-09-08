@@ -43,5 +43,7 @@ jobs:
         run: npm run validate
       - name: Build the exact static artifact
         run: npm run build
-      - name: Confirm the phone navigation transform is applied
-        run: grep -Fq '@media(max-width:430px){.section-nav{gap:3px;flex-wrap:nowrap}.section-nav a{padding:9px 8px;font-size:12px;min-height:42px;white-space:nowrap}}' dist/index.html
+      - name: Confirm source and build artifacts are byte-identical
+        run: cmp -s index.html dist/index.html
+      - name: Confirm the one-line mobile navigation is committed
+        run: grep -Fq '@media(max-width:600px){.section-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;flex-wrap:nowrap;width:100%}.section-nav a{display:flex;align-items:center;justify-content:center;padding:7px 2px;font-size:10px;min-height:36px;white-space:nowrap;width:100%;min-width:0}}' index.html
