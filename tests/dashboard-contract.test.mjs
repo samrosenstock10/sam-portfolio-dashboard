@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateDashboardHtml } from '../lib/dashboard-contract.mjs';
+import { buildBusinessExposure } from '../lib/business-exposure.mjs';
 
 function validData() {
   const holding = {
@@ -29,6 +30,7 @@ function validData() {
     etfSourceDates: { qqqHoldings: '2026-08-20', spyHoldings: '2026-08-20', qqqSectors: '2026-07-31', spySectors: '2026-08-20' },
   };
   for (const fund of ['qqq', 'spy']) data[fund] = Array.from({ length: 30 }, (_, i) => ({ ...data[fund][0], rank: i + 1, ticker: `EX${i}`, weightInETF: 0.01 }));
+  data.businessExposure = buildBusinessExposure({ portfolioAsOf: data.portfolioAsOf, reviewedAsOf: '2026-08-21', categories: [{ id: 'TECH', name: 'Technology', description: 'Example businesses' }], mappings: data.holdings.map(h => ({ categoryId: 'TECH', ticker: h.ticker, company: h.position, companyShare: 1, allocation: h.totalAllocation, directAllocation: h.directAllocation, qqqAllocation: h.qqqLookThrough, spyAllocation: h.spyLookThrough })) });
   return data;
 }
 
@@ -37,6 +39,7 @@ function validHtml(data = validData()) {
     'roth-note','changes','return-history','return-chart','performance','market-bars','sector-bars',
     'account-bars','vehicle-donut','vehicle-legend','structure-bars','holdings-table','beta-grid',
     'qqq-table','spy-table',
+    'business-exposure','business-bars','toggle-business',
   ];
   const rows = Array.from({ length: 252 }, (_, index) => [45504 + index, index ? 0.01 : 0, index ? 0.02 : 0, index ? 0.03 : 0, index ? 0.04 : 0]);
   return `<!doctype html><html><head><style>:root{--bg:#080808}html{background:var(--bg)}body{background:var(--bg)}.chart-scroll{max-height:1050px;overflow-y:auto}@media(max-width:760px){.chart-scroll{max-height:520px}}</style></head><body>${'x'.repeat(50000)}<a href="https://docs.google.com/spreadsheets/d/1XrpgOS9dFkQljaUf9Eftk6DyGnyYcmHnoKZGwGoS1hw/edit">Source</a>${ids.map((id) => id === 'performance' ? `<section id="performance">Money-weighted IRR Time-weighted QQQ</section>` : `<div id="${id}"></div>`).join('')}<section class="card full"></section><script id="performance-history" type="application/json">${JSON.stringify(rows)}</script><script id="dashboard-data" type="application/json">${JSON.stringify(data)}</script></body></html>`;
@@ -53,6 +56,11 @@ function changeData(path, value) {
 test('accepts a dashboard satisfying the permanent contract', () => {
   const result = validateDashboardHtml(validHtml());
   assert.equal(result.performanceRows, 252);
+});
+
+test('rejects a dropped business section or data during a future refresh', () => {
+  assert.throws(() => validateDashboardHtml(validHtml().replace('id="business-bars"', 'id="missing-business"')), /missing_required_id:business-bars/);
+  assert.throws(() => validateDashboardHtml(changeData('businessExposure', undefined)), /business_exposure:missing_data/);
 });
 
 test('rejects a restored concentration chart', () => {
