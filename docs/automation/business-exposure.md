@@ -1,6 +1,6 @@
 # Updating business exposure
 
-The canonical methods, common category IDs and original reported segments live in the three Business tabs of the source spreadsheet. Follow AUTOMATION.md to refresh those tabs before exporting. A daily performance update preserves the last verified business snapshot.
+The canonical methods, common category IDs and original reported segments live in the Business tabs and ETF Remaining Holdings of the source spreadsheet. Follow AUTOMATION.md to refresh those tabs before exporting. A daily performance update preserves the last verified business snapshot.
 
 Read evaluated, full-precision values. Require Business Exposure!B7 = OK, each active Business Mapping!U row = OK, and Business Categories!B58 = MATCHES SOURCE. Normalize Notes!B2 to ISO for `portfolioAsOf`; normalize Business Categories!B54 for `reviewedAsOf`. Do not use the execution date as the portfolio date.
 
@@ -28,6 +28,6 @@ TZ=UTC npm run validate
 TZ=UTC npm run build
 ```
 
-The import validates the entire candidate before writing. The build independently requires business data and section IDs, checks the snapshot date against `portfolioAsOf`, checks allocations and source contributions against every canonical holding, and rejects duplicate/missing company mappings. QQQ/SPY residuals remain fully counted in ETF_OTHER and attributed to their respective funds even though the legacy canonical holdings data stores them in the direct/residual column.
+The import validates the entire candidate before writing. The build independently requires business data and section IDs, checks the snapshot date against `portfolioAsOf`, checks allocations and source contributions against every canonical holding, and rejects duplicate/missing company mappings. QQQ/SPY residuals are reallocated only when complete matching-date remaining constituents are available. Their unclassified balance stays in ETF_OTHER. Follow [ETF remaining holdings](etf-remaining-holdings.md) for the additional source tab, export fields and three-color decomposition. Initial pending exports omit remaining inputs and keep the original residual fully counted.
 
 Before publication check the actual candidate in the browser: category order; ten visible rows initially; Show all and Show top 10; expand and collapse by touch/click and keyboard; accurate company rows and both percentage columns; gray ETF remainder; visible long names; no page/table overflow on phone widths. Publish through the normal single-PR workflow. Confirm production serves the validated bytes. If the browser cannot reach a local preview, use the normal hosted branch preview.
