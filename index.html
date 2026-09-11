@@ -110,7 +110,7 @@
     .business-chevron{flex:0 0 7px;width:7px;height:7px;border-right:1.5px solid #a1a1aa;border-bottom:1.5px solid #a1a1aa;transform:rotate(-45deg)}
     .business-category[open] .business-chevron{transform:rotate(45deg)}
     .business-track{height:16px;border-radius:4px;background:#1d1d1f;position:relative;overflow:hidden}
-    .business-segment{position:absolute;height:100%;border-radius:2px}
+    .business-segment{position:absolute;height:100%;border-radius:0}
     .business-zero{position:absolute;height:100%;width:1px;background:#a1a1aa;z-index:1}
     .business-total{font-size:12px;font-variant-numeric:tabular-nums;text-align:right;font-weight:600}
     .business-detail{margin:0 4px 14px 20px;padding:12px 14px;background:#151515;border:1px solid #292929;border-radius:8px}
@@ -392,10 +392,15 @@ const businessMin=Math.min(0,...businessCategories.map(c=>businessParts(c).reduc
 const businessRange=businessMax-businessMin;
 document.getElementById("business-bars").innerHTML=businessCategories.map(c=>{
   let positive=0,negative=0;
-  const segments=businessParts(c).map(p=>{
+  const parts=businessParts(c).filter(p=>p.value!==0);
+  const leftEdge=parts.reduce((s,p)=>s+Math.min(0,p.value),0);
+  const rightEdge=parts.reduce((s,p)=>s+Math.max(0,p.value),0);
+  const segments=parts.map(p=>{
     const start=p.value>=0?positive:negative+p.value;
     if(p.value>=0)positive+=p.value;else negative+=p.value;
-    return '<span class="business-segment" style="left:'+((start-businessMin)/businessRange*100)+'%;width:'+(Math.abs(p.value)/businessRange*100)+'%;background:'+p.color+'"></span>';
+    const leftRadius=Math.abs(start-leftEdge)<1e-12?'4px':'0';
+    const rightRadius=Math.abs(start+Math.abs(p.value)-rightEdge)<1e-12?'4px':'0';
+    return '<span class="business-segment" style="left:'+((start-businessMin)/businessRange*100)+'%;width:'+(Math.abs(p.value)/businessRange*100)+'%;background:'+p.color+';border-radius:'+leftRadius+' '+rightRadius+' '+rightRadius+' '+leftRadius+'"></span>';
   }).join("");
   const rows=c.companies.map(r=>{
     const nonCompany=["ETF_OTHER","CASH","GOLD"].includes(c.id);
@@ -449,4 +454,3 @@ document.addEventListener("pointerout",e=>{if(e.target.closest("[data-tooltip]")
 </script>
 </body>
 </html>
-
