@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { validateEtfFreshness } from '../lib/etf-freshness.mjs';
 
 const fixture = () => ({
@@ -46,4 +47,23 @@ test('does not age weekly inputs against the daily performance date or wall cloc
 test('keeps the private freshness ledger out of embedded public data', () => {
   const data = fixture(); data.sourceFreshness = [{ status: 'Source unchanged' }];
   assert.throws(() => validateEtfFreshness(data), /private_source_freshness_exposed/);
+});
+
+test('calendar-date validation is independent of the worker timezone', () => {
+  const moduleUrl = new URL('../lib/etf-freshness.mjs', import.meta.url).href;
+  for (const timezone of ['UTC', 'America/New_York', 'Asia/Tokyo', 'Pacific/Kiritimati']) {
+    const result = spawnSync(process.execPath, ['--input-type=module', '-e',
+      `import { validateEtfFreshness } from ${JSON.stringify(moduleUrl)}; validateEtfFreshness(${JSON.stringify(fixture())});`
+    ], { env: { ...process.env, TZ: timezone }, encoding: 'utf8' });
+    assert.equal(result.status, 0, `${timezone}: ${result.stderr}`);
+  }
+});
+
+test('rejects impossible or ambiguous table dates instead of normalizing them', () => {
+  for (const date of ['Sep 31, 2026', 'Feb 30, 2026', 'Foo 4, 2026', '09/04/2026', '2026-02-30', null]) {
+    const data = fixture(); data.qqq[0].asOf = date;
+    assert.throws(() => validateEtfFreshness(data), /mixed_or_missing_table_date/);
+  }
+  const data = fixture(); data.qqq.forEach(row => { row.asOf = '2026-09-04'; });
+  assert.doesNotThrow(() => validateEtfFreshness(data));
 });

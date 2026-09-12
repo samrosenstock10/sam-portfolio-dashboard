@@ -13,11 +13,15 @@ This file is the durable operating contract for the scheduled Portfolio Dashboar
 
 ## One logical cycle, several recovery wakes
 
-The 10:00 PM New York invocation is the daily anchor. The 11:00 PM, midnight, 2:00 AM, 4:00 AM, 6:00 AM, and 8:00 AM invocations are retries for that same anchor, not new portfolio days.
+The Friday portfolio refresh starts at **5:00 PM America/New_York every Friday**, as requested by the owner on September 11, 2026. This is the first attempt, not a promise that brokerage or issuer data has posted by then. Keep this timezone through daylight-saving changes.
+
+The 10:00 PM New York invocation remains the daily performance anchor. The 11:00 PM, midnight, 2:00 AM, 4:00 AM, 6:00 AM, and 8:00 AM invocations are recovery opportunities. They also recover any incomplete Friday layer. A Friday completed at 5:00 PM must not be refreshed again at 10:00 or 11:00 PM unless a verified correction is needed.
+
+One existing task services both layers. Its daily wake hours are 00, 02, 04, 06, 08, 17, 22 and 23 in America/New_York. The extra 17:00 wake is actionable **only on Fridays**; at 17:00 on any other weekday, stop silently after reading this contract, without reading financial sources or making changes. This preserves the existing daily and recovery schedule without creating a second worker. Manual requests to run now bypass this wake-hour filter, but never bypass source or completion checks.
 
 At every invocation, perform a cheap state check before source retrieval or calculation:
 
-1. Resolve the most recent 10:00 PM New York anchor and latest completed regular U.S. trading session on or before it.
+1. Resolve two independent due dates in America/New_York: the most recent 10:00 PM daily anchor and the most recent Friday 5:00 PM weekly anchor. At Friday 5:00 PM, that day's weekly layer is already due even though the latest daily anchor belongs to Thursday. Before Friday 5:00 PM, the new weekly layer is not due. Use the actual exchange calendar for completed sessions; do not create a trading session for a holiday. An overnight retry retains its Friday target instead of switching to Saturday. A manual run requested after Friday's close may complete that Friday early. The daily anchor must never decide which Friday is due.
 2. Read only the minimum state needed to classify the cycle: latest `Performance Daily` date/count, visible `Performance` date, relevant `Weekly History` row, hidden `Source Freshness`, GitHub `main` commit and `index.html`, production deployment state, and the production-parity issue.
 3. Classify the cycle as one of:
    - `COMPLETE`: Sheet, GitHub, and production already agree for every due layer.
@@ -50,7 +54,7 @@ Permanent financial-method invariants:
 
 ### Friday portfolio
 
-Once per completed Friday session, independently refresh holdings/cash, Roth allocation, physical gold, market caps, QQQ/SPY top-30 company tables, QQQ/SPY sectors, dependent look-throughs, and `Weekly History`.
+Starting at Friday 5:00 PM New York, once per completed Friday session, independently refresh holdings/cash, Roth allocation, physical gold, market caps, QQQ/SPY top-30 company tables, QQQ/SPY sectors, dependent look-throughs, and `Weekly History`. Require a verified post-close provider snapshot; a same-date intraday balance or successful sync request alone does not qualify. If data is late, leave the Friday cursor pending and let later wakes recover it.
 
 - Store each source's real as-of date, not the run date.
 - Retrieve the latest available dated source versions every Friday, even when company membership is unchanged. Weights change with prices. Checking a landing page is not a data refresh.
@@ -106,11 +110,14 @@ Only after the feature checks pass, set Business Categories B51 to the truthful 
 ## Sheet write discipline
 
 - Re-read the affected range immediately before every write.
+- Before a mutation or PR, check current source cursors, current main and open refresh PRs again. If another invocation has completed this data version, verify parity and stop. Resume an existing valid candidate instead of opening a competing refresh. Do not stamp retrieval evidence with the scheduled anchor time: record the actual check time separately from the logical session date.
 - Upsert by stable key; never append blindly.
 - Write raw/audit fields first, recalculate, then update investor-facing percentages.
 - Preserve hidden `Source Freshness` and `Liabilities` tabs.
 - Do not change historical formulas, return methodology, calibration, tab structure, or spreadsheet timezone during a routine run.
 - Completion requires every applicable total and dependent output to reconcile.
+
+For `ETF Remaining Holdings`, verify J for every active row against G × H × that row's own fund ownership. QQQ ownership uses `ETF Look-Through!E3:E32` plus the QQQ residual; SPY uses `ETF Look-Through!N3:N32` plus the SPY residual. Never copy the QQQ contribution-column reference into SPY rows. Independently reconcile each fund's allocated tail against its own residual; a combined total can conceal an attribution error. Preserve the strengthened `Business Exposure!B7` check: unclassified weight and tail contributions must be nonnegative within rounding tolerance, and neither fund's tail may overdraw its residual. Check B7, Business Categories!B56 and both fund controls before advancing any business completion cursor.
 
 ## Dashboard layout and company concentration
 
