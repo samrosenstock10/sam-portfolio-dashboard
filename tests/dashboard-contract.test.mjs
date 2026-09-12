@@ -1,3 +1,4 @@
+import { companyConcentration } from '../lib/company-concentration.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateDashboardHtml } from '../lib/dashboard-contract.mjs';
@@ -31,18 +32,19 @@ function validData() {
   };
   for (const fund of ['qqq', 'spy']) data[fund] = Array.from({ length: 30 }, (_, i) => ({ ...data[fund][0], rank: i + 1, ticker: `EX${i}`, weightInETF: 0.01 }));
   data.businessExposure = buildBusinessExposure({ portfolioAsOf: data.portfolioAsOf, reviewedAsOf: '2026-08-21', categories: [{ id: 'TECH', name: 'Technology', description: 'Example businesses' }], mappings: data.holdings.map(h => ({ categoryId: 'TECH', ticker: h.ticker, company: h.position, companyShare: 1, allocation: h.totalAllocation, directAllocation: h.directAllocation, qqqAllocation: h.qqqLookThrough, spyAllocation: h.spyLookThrough })) });
+  Object.assign(data.stats, companyConcentration(data.businessExposure));
   return data;
 }
 
 function validHtml(data = validData()) {
   const ids = [
     'roth-note','changes','return-history','return-chart','performance','market-bars','sector-bars',
-    'account-bars','vehicle-donut','vehicle-legend','structure-bars','holdings-table','beta-grid',
+    'account-bars','holdings-table','beta-grid',
     'qqq-table','spy-table',
     'business-exposure','business-bars','toggle-business',
   ];
   const rows = Array.from({ length: 252 }, (_, index) => [45504 + index, index ? 0.01 : 0, index ? 0.02 : 0, index ? 0.03 : 0, index ? 0.04 : 0]);
-  return `<!doctype html><html><head><style>:root{--bg:#080808}html{background:var(--bg)}body{background:var(--bg)}.chart-scroll{max-height:1050px;overflow-y:auto}@media(max-width:760px){.chart-scroll{max-height:520px}}</style></head><body>${'x'.repeat(50000)}<a href="https://docs.google.com/spreadsheets/d/1XrpgOS9dFkQljaUf9Eftk6DyGnyYcmHnoKZGwGoS1hw/edit">Source</a>${ids.map((id) => id === 'performance' ? `<section id="performance">Money-weighted IRR Time-weighted QQQ</section>` : `<div id="${id}"></div>`).join('')}<section class="card full"></section><script id="performance-history" type="application/json">${JSON.stringify(rows)}</script><script id="dashboard-data" type="application/json">${JSON.stringify(data)}</script></body></html>`;
+  return `<!doctype html><html><head><style>:root{--bg:#080808}html{background:var(--bg)}body{background:var(--bg)}.chart-scroll{max-height:1050px;overflow-y:auto}@media(max-width:760px){.chart-scroll{max-height:520px}}</style></head><body>${'x'.repeat(50000)}<a href="https://docs.google.com/spreadsheets/d/1XrpgOS9dFkQljaUf9Eftk6DyGnyYcmHnoKZGwGoS1hw/edit">Source</a>${ids.map((id) => id === 'performance' ? `<section id="performance">Money-weighted IRR Time-weighted QQQ</section>` : `<div id="${id}"></div>`).join('')}<section class="card full"></section><details id="sector-analysis"></details><details id="beta-analysis"></details><script id="performance-history" type="application/json">${JSON.stringify(rows)}</script><script id="dashboard-data" type="application/json">${JSON.stringify(data)}</script></body></html>`;
 }
 
 function changeData(path, value) {
