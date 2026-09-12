@@ -2,9 +2,11 @@
 
 The owner approved the outside-top-30 extension on September 11, 2026. `ETF Remaining Holdings` (sheet ID 1900000104) is the fourth business-exposure source tab. It reuses the 26 common categories. This is a one-time classification setup with weekly constituent membership and weight maintenance, not a weekly reinvention of every small company's business mix.
 
-## Initial state
+## Activation and current operating state
 
-The initial issuer files are dated September 10, 2026. The live portfolio remains September 4, with QQQ holdings September 4 and SPY September 3. No matching historical full files could be recovered. The 70 QQQ and 471 SPY outside-top-30 companies are therefore staged: 544 category rows, zero active portfolio contribution, and truthful WAITING status. The current 11.64% residual remains unclassified. Do not relabel these newer files or use a scaled estimate to populate the old snapshot. The next verified Friday refresh must activate a coherent new version from complete, matching issuer files. This pending extension is an incomplete Friday layer even when the base business snapshot is otherwise verified.
+The September 11, 2026 Friday refresh activated outside-top-30 exposure from matched September 10 full issuer files. Both funds are active; Business Categories!B59 records the verified September 11 cycle and B60 is READY. This is a historical activation record, not permission to reuse those dates or weights in future weeks. Read live controls and current main for every due cycle.
+
+Before activation, the September 4 snapshot retained its residual because matching historical full files were unavailable. Preserve that historical distinction. Never return the active feature to zero-contribution staging merely because an older task prompt describes the initial setup. On a future source failure, keep the last verified published version and leave the new cycle pending.
 
 ## Source layout and refresh
 
@@ -49,4 +51,4 @@ This is a schema example, not actual holdings. Rows map to C/D/E/G/H and control
 
 Public `remainingHoldings` stores each active fund/ticker and its fund weight once, with `remainingSourceDates`. The validator independently derives its portfolio contribution from canonical top-30 contributions plus the original residual. `qqqAllocation` and `spyAllocation` include both top 30 and remaining contributions; `qqqOutsideAllocation` and `spyOutsideAllocation` identify the subset shown in gray. Blue is direct; purple is both ETF allocations minus the gray subset. Fund residual rows are also gray and remain in ETF_OTHER. Public categories and companies reconcile to the unchanged canonical total. During the initial staging period the public arrays are empty and remainingStatus is pending, with a short visible explanation.
 
-The website category expansion shows each company's direct, ETF top-30 and outside-top-30 portfolio contributions below its ticker. Keep only outer bar corners rounded, with square internal joins. Use the existing source-sheet publication, build, PR and stable-production parity workflow. Do not create another task or change the existing schedule.
+The website category expansion shows each company's direct, ETF top-30 and outside-top-30 portfolio contributions below its ticker. Keep only outer bar corners rounded, with square internal joins. Use the existing source-sheet publication, build, PR and stable-production parity workflow. Use the same task and the Friday 5:00 PM New York start with daily/recovery wakes specified in AUTOMATION.md; do not create another worker.

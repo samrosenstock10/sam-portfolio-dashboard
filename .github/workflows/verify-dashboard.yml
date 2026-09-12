@@ -3,6 +3,7 @@ name: Verify portfolio dashboard
 on:
   pull_request:
     paths:
+      - 'AUTOMATION.md'
       - 'index.html'
       - 'vercel.json'
       - 'package.json'
@@ -15,6 +16,7 @@ on:
     branches:
       - main
     paths:
+      - 'AUTOMATION.md'
       - 'index.html'
       - 'vercel.json'
       - 'package.json'
