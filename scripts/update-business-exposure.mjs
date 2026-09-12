@@ -1,3 +1,4 @@
+import { companyConcentration } from '../lib/company-concentration.mjs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { buildBusinessExposure } from '../lib/business-exposure.mjs';
 import { validateDashboardHtml } from '../lib/dashboard-contract.mjs';
@@ -10,6 +11,7 @@ const match = html.match(pattern);
 if (!match) throw new Error('Missing dashboard-data');
 const data = JSON.parse(match[2]);
 data.businessExposure = buildBusinessExposure(JSON.parse(await readFile(inputPath, 'utf8')));
+Object.assign(data.stats, companyConcentration(data.businessExposure));
 const candidate = html.replace(pattern, (_, open, old, end) => open + JSON.stringify(data).replaceAll('<', '\\u003c') + end);
 validateDashboardHtml(candidate);
 await writeFile(htmlPath, candidate);
